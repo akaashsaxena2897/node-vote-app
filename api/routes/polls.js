@@ -27,7 +27,7 @@ router.post('/',(req,res,next)=>{
 
  // JSON API for list of polls
 router.get('/',(req,res,next)=>{
-    Poll.find().select('question').exec().then(polls=>{
+    Poll.find().select('question').then(polls=>{
         const response={
              count:polls.length,
              
@@ -42,6 +42,23 @@ router.get('/',(req,res,next)=>{
   
 });
 
+//JSO API for deleting Poll
+router.delete('/:pollId',(req,res,next)=>{
+
+ const id = req.params.pollId;
+    Poll.remove({_id:id}).exec().then(result =>
+    {
+        res.status(200).json(result);
+    }).catch(err=>{
+        console.log(err);
+        res.status(500).json({
+            error:err
+        });
+    });
+     
+    
+});
+
 // JSON API for getting a single poll
 router.get('/:pollId',(req,res,next)=>{
     var pollId = req.params.pollId;
@@ -50,12 +67,15 @@ router.get('/:pollId',(req,res,next)=>{
         var userVoted = false,
         userChoice,
         totalVotes = 0;
-        console.log(req.ip );
+        console.log("req.ip "+req.ip );
+        
         for(c in poll.choices) {
             var choice = poll.choices[c];
-        for(v in choice.votes) {
+        for(v in choice.voteCount) {
             var voteCount = choice.voteCount[v];
             totalVotes++;
+            console.log("Choice["+c+"] = "+choice);
+            console.log("_id "+ choice._id);
         if(voteCount.ip === (req.header('x-forwarded-for') || req.ip)) {
             
             userVoted = true;
@@ -67,9 +87,9 @@ router.get('/:pollId',(req,res,next)=>{
             poll.userChoice = userChoice;
             poll.totalVotes = totalVotes;
             console.log('userVoted: ' + userVoted + ' userChoice: '+ userChoice + ' totalVotes: '+ totalVotes);
-            res.status(200).json(poll);
+            res.json(poll);
         }).catch(err => {
-        console.log(err);
+        console.log("Error in getting a poll " + err);
         res.status(500).json({error:err});
              }); 
       

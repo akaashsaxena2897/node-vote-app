@@ -5,6 +5,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const checkAuth = require('../middleware/check-auth');
+// LOGINRADIUS STACK IMPLEMENTATION
+
+ 
 
 router.get('/',(req,res,next)=>{
     Users.find().select('name email password contestantSelected _id')
@@ -81,6 +84,7 @@ router.get('/:userId',(req,res,next)=>{
     const id = req.params.userId;
     Users.findById(id).exec().then(doc=>{
         console.log("From database",doc); 
+        res.status(200).json(doc);
         
     }).catch(err => {
         console.log(err);
@@ -183,6 +187,8 @@ router.post('/login',(req,res,next)=>{
            if(req.body.password){
             console.log('User login '+ result);
           const token = jwt.sign({
+                firstName: user.firstName,
+                token:user.access_token,
                email:user.email,
                userId:user.id
            },process.env.JWT_KEY,{
@@ -240,7 +246,7 @@ router.get('/status', function(req, res) {
 router.use('/userToken',function(req,res,next){
 
     var token = req.body.token||req.body.query||req.headers['x-access-token'];
-    console.log(token);
+    console.log("Token sent to userToken is " +token);
         if(token){
              jwt.verify(token,process.env.JWT_KEY,function(err,decoded){
                  if(err){
@@ -251,7 +257,7 @@ router.use('/userToken',function(req,res,next){
 
                  }else{
                      req.decoded = decoded;
-                     console.log(req.decoded);
+                     console.log("Token decoded " +req.decoded);
                      next();
                  }
              });
@@ -265,4 +271,87 @@ router.post('/userToken',function(req,res){
     res.send(req.decoded);
 });
 
+var config = {
+  apiDomain: 'api.loginradius.com',
+  apiKey: 'c2de6c68-0355-473f-99dd-722eff7f6ef9',
+  apiSecret: 'd76158dc-2973-402d-b99c-1f389212b7c2',
+  siteName: 'dev-node-vote-app',
+  serverRegion: '',
+  apiRequestSigning: false,
+  proxy: {
+    protocol: '',
+    host: '',
+    port: '',
+    user: '',
+    password: ''
+  }
+};
+
+var lrv2 = require('loginradius-sdk')(config);
+router.post('/lr/signup',function(req,res){
+    var authUserRegistrationModel ={ 
+"email" : [   { 
+"type" : "Primary"  ,
+"value" : req.body.email
+}  ] ,
+"firstName" : req.body.firstName,
+"lastName" : req.body.lastName,
+"password" : req.body.password
+};  //Required
+var sott = "twDMHXh78Puf185n6X3RVTr6Qs8J3f0K720+0tqWZDBrNPC9z0vSZEhwZiz3Wi6ZBA9ip+GLhO7eTYAJbfm4MrDdqU9/GluzkvUMSGXzass=*d06ff30153fdcc337202d5fa39fb421e"; 
+
+
+lrv2.authenticationApi.userRegistrationByEmail(authUserRegistrationModel, sott).then((response) => {
+   console.log(response);
+   res.status(200).json(response);
+}).catch((error) => {
+   console.log(error);
+   res.json(error);
+});
+})
+
+router.post('/lr/login',function(req,res){
+
+    console.log(req.body);
+var emailAuthenticationModel ={ 
+"email" : req.body.email,
+"password" : req.body.password
+};  //Required
+
+lrv2.authenticationApi.loginByEmail(emailAuthenticationModel).then((response) => {
+   const id =response.Profile.ID;
+   
+   const token = jwt.sign({
+                firstName: response.Profile.FirstName,
+                access_token:response.Profile.access_token,
+               email:response.email,
+               userId:id
+           },process.env.JWT_KEY,{
+               expiresIn:"1h"
+           });
+           console.log(token);
+            return res.status(200).json({
+                success: true,
+                message:"Auth successful",
+                token:token,
+                firstName: response.Profile.FirstName
+
+            });
+
+}).catch((error) => {
+   console.log(error);
+   res.json(error);
+});
+});
+router.post('/lr/forgotPasswordRoute',function (req,res){
+var email = req.body.email;
+console.log("Email sent at "+req.body.email);
+lrv2.accountApi.getForgotPasswordToken(email).then((response) => {
+   console.log(response);
+   res.status(200).json(response);
+}).catch((error) => {
+   console.log(error);
+   res.json(error);
+});
+});
 module.exports = router;
