@@ -1,0 +1,48 @@
+<!-- <!DOCTYPE html >
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-route.js"></script>
+<script src="controller.js"></script>
+<script src="services.js"></script>
+<script src="main.js"></script>
+<link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body data-ng-app = "myApp"> -->
+
+<div class="col-md-4">
+  <h1>Login</h1>
+  
+  <form class="form" >
+    <div class="form-group">
+      <label>Email</label>
+      <input type="text" class="form-control" ng-model="loginForm.email" name="email"  required>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+        <input type="password" class="form-control" name="password"  ng-model="loginForm.password" required>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-default" ng-click="login()" >Login</button>
+      </div>
+  </form>
+  <br>
+  <hr>
+  <a href= "/forgotPassword"> Forgot Password?</a>
+  <br>
+  
+  <a href="/register"> New User? Register here!</a>
+  
+  <div class="row show hide message" ng-if="loginSuccess === true">
+    <div class="alert alert-success"> {{message}} </div>
+    </div>
+    
+     <div class="row show hide message" ng-if="loginFailed === true">
+    <div class="alert alert-danger"> {{message}}</div>
+    </div>'
+</div>
+
+
+<!-- </body>
+</html> -->

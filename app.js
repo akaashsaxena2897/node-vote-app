@@ -301,6 +301,16 @@ io.sockets.on('connection', function (socket) {
      });
     });
 });
+var config = {
+  apiDomain: 'https://api.loginradius.com',
+  apiKey: 'c2de6c68-0355-473f-99dd-722eff7f6ef9',
+  apiSecret: 'd76158dc-2973-402d-b99c-1f389212b7c2',
+  siteName: 'dev-node-vote-app',
+  apiRequestSigning: false,
+};
+
+var lrv2 = require('loginradius-sdk')(config);
+
 
 /****DATABASE******/
 mongoose.connect('mongodb+srv://admin:'+process.env.MONGO_ATLAS_PW+'@node-vote-app.5xyko.mongodb.net/node-vote-app?retryWrites=true&w=majority',
